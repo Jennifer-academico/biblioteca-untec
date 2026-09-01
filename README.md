@@ -91,23 +91,45 @@ Actualmente cualquier usuario autenticado puede realizar todas las acciones del 
 
 ## Cómo ejecutar el proyecto
 
-Requisitos: JDK 21, compila con target 17, Maven, Apache Tomcat 9, Eclipse IDE for Enterprise Java and Web Developers.
+Requisitos: JDK 21 (compila con target 17), Apache Maven, Apache Tomcat 9, Eclipse IDE for Enterprise Java and Web Developers.
 
-Importar en Eclipse:
+Clonar el repositorio:
+
+```
+git clone https://github.com/Jennifer-academico/biblioteca-untec.git
+```
+
+Configurar Tomcat 9 en Eclipse, si todavía no está configurado:
+
+```
+Window → Preferences → Server → Runtime Environments → Add...
+→ Apache → Apache Tomcat v9.0 → Next
+→ seleccionar la carpeta donde está instalado Tomcat 9 → Finish
+```
+
+Importar el proyecto en Eclipse:
 
 ```
 File → Import... → Maven → Existing Maven Projects
 ```
 
-Seleccionar la carpeta que contiene pom.xml y esperar que Maven resuelva las dependencias.
+Seleccionar la carpeta clonada, la que contiene pom.xml, y esperar a que Maven resuelva las dependencias automáticamente. Esto puede tardar unos minutos la primera vez.
 
-Ejecutar:
+Asociar el proyecto al servidor:
+
+```
+clic derecho sobre el proyecto → Run As → Run on Server → Apache Tomcat v9.0
+```
+
+No se necesita instalar ni configurar ninguna base de datos aparte: el proyecto usa H2 en modo archivo, y la primera vez que se ejecuta crea automáticamente las tablas y carga los datos de prueba, incluyendo el usuario de acceso.
+
+También se puede generar el WAR desde la línea de comandos:
 
 ```
 mvn clean test package
 ```
 
-o desde Eclipse, clic derecho sobre el proyecto → Run As → Run on Server → Tomcat v9.0.
+El archivo queda en target/biblioteca-untec.war, listo para desplegarse en Tomcat Manager o copiarse a la carpeta webapps de Tomcat.
 
 URL una vez desplegado:
 
