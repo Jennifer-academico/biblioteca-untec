@@ -30,24 +30,24 @@ Navegador
 
 | Requerimiento | Estado | Dónde se implementa |
 |---|---|---|
-| Java EE, JSP, Servlets, patrón MVC | Cumplido | Paquetes `model`, `dao`, `controller`; vistas JSP en `webapp` |
-| Capa DAO con JDBC | Cumplido | `LibroDAO`, `UsuarioDAO`, `PrestamoDAO` |
-| JSTL en la vista | Cumplido | `c:if`, `c:forEach`, `c:choose`, `c:out` en los 3 JSP |
+| Java EE, JSP, Servlets, patrón MVC | Cumplido | Paquetes model, dao, controller; vistas JSP en webapp |
+| Capa DAO con JDBC | Cumplido | LibroDAO, UsuarioDAO, PrestamoDAO |
+| JSTL en la vista | Cumplido | c:if, c:forEach, c:choose, c:out en los 3 JSP |
 | Formularios de interacción | Cumplido | Login, agregado de libro, préstamo, devolución |
-| Gestión de sesiones | Cumplido | `HttpSession` guarda el usuario logueado |
-| Despliegue en Tomcat vía WAR | Cumplido | `mvn clean package` genera `biblioteca-untec.war` |
-| Base de datos H2 | Cumplido | Conexión Singleton en `ConexionBD` |
-| Patrón Singleton para la conexión | Cumplido | `ConexionBD.getInstancia()` |
+| Gestión de sesiones | Cumplido | HttpSession guarda el usuario logueado |
+| Despliegue en Tomcat vía WAR | Cumplido | mvn clean package genera biblioteca-untec.war |
+| Base de datos H2 | Cumplido | Conexión Singleton en ConexionBD |
+| Patrón Singleton para la conexión | Cumplido | ConexionBD.getInstancia() |
 
 ## Cómo funciona la aplicación
 
 ### Inicio de sesión
 
-Cualquier usuario debe autenticarse antes de acceder al catálogo o a sus préstamos. El login valida correo y contraseña contra la tabla `usuario`, y si son correctos, guarda al usuario en una `HttpSession`. Esa sesión es lo que le permite al sistema recordar quién es el usuario mientras navega entre el catálogo y sus préstamos, sin necesidad de pedir la contraseña en cada página. Si un usuario intenta acceder a `/libros` o `/prestamos` sin haber iniciado sesión, el sistema lo redirige de vuelta al login.
+Cualquier usuario debe autenticarse antes de acceder al catálogo o a sus préstamos. El login valida correo y contraseña contra la tabla usuario, y si son correctos, guarda al usuario en una HttpSession. Esa sesión es lo que le permite al sistema recordar quién es el usuario mientras navega entre el catálogo y sus préstamos, sin necesidad de pedir la contraseña en cada página. Si un usuario intenta acceder a /libros o /prestamos sin haber iniciado sesión, el sistema lo redirige de vuelta al login.
 
 ### Cierre de sesión
 
-El botón "Cerrar sesión" invalida la `HttpSession` actual (`session.invalidate()`), lo que borra toda la información guardada de ese usuario en el servidor. Es importante que esta acción exista porque, sin ella, cualquiera que use la misma computadora después podría seguir navegando con tu sesión abierta.
+El botón "Cerrar sesión" invalida la HttpSession actual (session.invalidate()), lo que borra toda la información guardada de ese usuario en el servidor. Es importante que esta acción exista porque, sin ella, cualquiera que use la misma computadora después podría seguir navegando con tu sesión abierta.
 
 ### Catálogo y agregado de libros
 
@@ -55,9 +55,9 @@ El catálogo muestra únicamente los libros marcados como activos. Cualquier usu
 
 ### Por qué "eliminar" un libro no lo borra de la base de datos
 
-Al principio, "eliminar" un libro hacía un `DELETE` real sobre la tabla. El problema apareció al intentar eliminar un libro que ya tenía un préstamo asociado: la base de datos rechazaba la operación, porque borrar ese libro hubiera dejado un préstamo apuntando a un libro inexistente, rompiendo la integridad de los datos.
+Al principio, "eliminar" un libro hacía un DELETE real sobre la tabla. El problema apareció al intentar eliminar un libro que ya tenía un préstamo asociado: la base de datos rechazaba la operación, porque borrar ese libro hubiera dejado un préstamo apuntando a un libro inexistente, rompiendo la integridad de los datos.
 
-La solución fue agregar una columna `activo` a la tabla `libro`. Ahora, eliminar un libro simplemente lo marca como `activo = false`, sin borrar la fila. El catálogo deja de mostrarlo, pero su historial de préstamos, quién lo pidió, cuándo, si se devolvió, sigue existiendo intacto. Es el mismo criterio que usa cualquier sistema real: nunca conviene borrar un dato que tiene historial asociado.
+La solución fue agregar una columna activo a la tabla libro. Ahora, eliminar un libro simplemente lo marca como activo = false, sin borrar la fila. El catálogo deja de mostrarlo, pero su historial de préstamos, quién lo pidió, cuándo, si se devolvió, sigue existiendo intacto. Es el mismo criterio que usa cualquier sistema real: nunca conviene borrar un dato que tiene historial asociado.
 
 ### Pedir un libro prestado
 
@@ -81,13 +81,13 @@ Cobertura final obtenida con JaCoCo: 88% de instrucciones, 82% de ramas, en 40 p
 
 ### Registro de usuarios nuevos
 
-Actualmente el sistema solo cuenta con un usuario de demostración, cargado automáticamente al iniciar la aplicación. No existe un formulario para que un usuario nuevo cree su propia cuenta desde la interfaz; `UsuarioDAO` solo tiene el método `buscarPorCredenciales()`, necesario para el login, pero no un método `crear()`.
+Actualmente el sistema solo cuenta con un usuario de demostración, cargado automáticamente al iniciar la aplicación. No existe un formulario para que un usuario nuevo cree su propia cuenta desde la interfaz; UsuarioDAO solo tiene el método buscarPorCredenciales(), necesario para el login, pero no un método crear().
 
-Agregar esta funcionalidad implicaría un formulario de registro con nombre, correo y contraseña, un método `UsuarioDAO.crear()` que valide que el correo no esté repetido antes de insertar, y considerar si conviene aplicar un hash a la contraseña en vez de guardarla en texto plano.
+Agregar esta funcionalidad implicaría un formulario de registro con nombre, correo y contraseña, un método UsuarioDAO.crear() que valide que el correo no esté repetido antes de insertar, y considerar si conviene aplicar un hash a la contraseña en vez de guardarla en texto plano.
 
 ### Roles de usuario
 
-Actualmente cualquier usuario autenticado puede realizar todas las acciones del sistema, incluyendo agregar y eliminar libros del catálogo, tareas que en una biblioteca real corresponderían solo al personal administrativo, no a cualquier estudiante. Diferenciar roles, por ejemplo "estudiante" y "bibliotecario", implicaría agregar una columna de rol a la tabla `usuario`, verificar ese rol en `LibroServlet` antes de permitir agregar o eliminar, y ocultar esas opciones en `libros.jsp` para quienes no tengan permiso.
+Actualmente cualquier usuario autenticado puede realizar todas las acciones del sistema, incluyendo agregar y eliminar libros del catálogo, tareas que en una biblioteca real corresponderían solo al personal administrativo, no a cualquier estudiante. Diferenciar roles, por ejemplo "estudiante" y "bibliotecario", implicaría agregar una columna de rol a la tabla usuario, verificar ese rol en LibroServlet antes de permitir agregar o eliminar, y ocultar esas opciones en libros.jsp para quienes no tengan permiso.
 
 ## Cómo ejecutar el proyecto
 
@@ -99,7 +99,7 @@ Importar en Eclipse:
 File → Import... → Maven → Existing Maven Projects
 ```
 
-Seleccionar la carpeta que contiene `pom.xml` y esperar que Maven resuelva las dependencias.
+Seleccionar la carpeta que contiene pom.xml y esperar que Maven resuelva las dependencias.
 
 Ejecutar:
 
@@ -157,3 +157,4 @@ src/test/java
 ├── dao (tests con base H2 en memoria)
 └── model (tests de lógica de negocio)
 ```
+
